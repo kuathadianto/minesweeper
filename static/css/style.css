@@ -40,3 +40,7 @@ html, body, .cs-full-height {
     left: 0;
     width: 100%;
 }
+
+footer {
+    padding-top: 0.75rem;
+}

@@ -117,6 +117,7 @@ function zeros(dimensions) {
     return array;
 }
 
+/* --- Two functions below need to be cleaned --- */
 // Called if box is clicked
 function box_clicked(x, y) {
     if (GAME_OVER) {
@@ -182,7 +183,7 @@ function box_right_clicked(x, y) {
     }
 
     var box_id = x + ',' + y;
-    var elem = '<button type="button" class="btn btn-outline-danger cs-btn-game-size" id="boxrc' + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-flag"></i></button>';
+    var elem = '<button type="button" class="btn btn-outline-danger cs-btn-game-size" id="boxrc' + box_id + '" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-flag"></i></button>';
     try {
         document.getElementById('box' + x + ',' + y).outerHTML = elem;
     } catch (TypeError) {
