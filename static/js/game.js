@@ -3,20 +3,20 @@ var TITLE = "Minesweeper";
 var LEVELS = [
     {
         "name": "Easy",
-        "grid_size": 4,
-        "bombs": 2,
+        "grid_size": 8,
+        "bombs": 10,
         "btn-class": "btn btn-success btn-lg cs-btn-margin-right cs-btn-game-level"
     },
     {
         "name": "Medium",
-        "grid_size": 6,
-        "bombs": 6,
+        "grid_size": 10,
+        "bombs": 20,
         "btn-class": "btn btn-warning btn-lg cs-btn-margin-right cs-btn-game-level"
     },
     {
         "name": "Hard",
-        "grid_size": 8,
-        "bombs": 14,
+        "grid_size": 12,
+        "bombs": 45,
         "btn-class": "btn btn-danger btn-lg cs-btn-game-level"
     }
 ]
