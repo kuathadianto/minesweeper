@@ -1,6 +1,6 @@
-// Game Configuration
-var title = "Minesweeper";
-var levels = [
+/* --- Game Configuration --- */
+var TITLE = "Minesweeper";
+var LEVELS = [
     {
         "name": "Easy",
         "grid_size": 4,
@@ -21,74 +21,84 @@ var levels = [
     }
 ]
 
-// Game init
+/* --- Game init --- */
 // Set Title
-document.title = title;
+document.title = TITLE;
 
 // Disable right click
 document.addEventListener('contextmenu', event => event.preventDefault());
 
-var grid;
-var gsize;
-var bmbs;
-var valid_boxes;
-var game_over = false;
-var game_started = false;
+// Create global variables
+var GRID;                   // Game board, matrix
+var GRID_SIZE;              // Grid size, integer
+var BOMBS;                  // How many bombs in game
+var VALID_BOXES;            // Boxes without bomb
+var GAME_OVER = false;      // Game over flag
+var GAME_STARTED = false;   // Game is started, if a box has been clicked    
 
-// Set available levels
-for (var i = 0; i < levels.length; i++) {
-    btn = '<button type="button" class="' + levels[i]['btn-class'] + '" onclick="game_start(' + levels[i]['grid_size'] + ', ' + levels[i]['bombs'] + ')">' + levels[i]['name'] + '</button>';
+// Show available levels
+for (var i = 0; i < LEVELS.length; i++) {
+    btn = '<button type="button" class="'
+        + LEVELS[i]['btn-class']
+        + '" onclick="game_start('
+        + LEVELS[i]['grid_size'] + ', '
+        + LEVELS[i]['bombs'] + ')">'
+        + LEVELS[i]['name']
+        + '</button>';
     document.getElementById('intro').childNodes[1].childNodes[1].innerHTML += btn;
 }
 
-// Functions
-// Board initializer
+/* --- Functions --- */
+// Called after level selected
 function game_start(grid_size, bombs) {
     // Hide jumbotron
     document.getElementById('intro').style.display = 'none';
 
-    game_started = false;
+    GAME_STARTED = false;
 
     // Create base grid
-    grid = zeros([grid_size, grid_size]);
-    gsize = grid_size;
-    bmbs = bombs;
+    GRID = zeros([grid_size, grid_size]);
+    GRID_SIZE = grid_size;
+    BOMBS = bombs;
 
-    // Initialize board
+    // Initialize empty board
     for (var i = 0; i < grid_size; i++) {
+        var div_in_html = document.getElementById('board').childNodes[1].childNodes[1].childNodes[1];
+
         if (i < grid_size - 1) {
-            document.getElementById('board').childNodes[1].childNodes[1].childNodes[1].innerHTML += '<div class="col-md-12 text-center cs-col-padding">';
+            div_in_html.innerHTML += '<div class="col-md-12 text-center cs-col-padding">';
         } else {
-            document.getElementById('board').childNodes[1].childNodes[1].childNodes[1].innerHTML += '<div class="col-md-12 text-center">';
+            div_in_html.innerHTML += '<div class="col-md-12 text-center">';
         }
 
         for (var j = 0; j < grid_size; j++) {
             box_id = i + ',' + j;
-            document.getElementById('board').childNodes[1].childNodes[1].childNodes[1].childNodes[i + 1].innerHTML += '<button type="button" class="btn btn-outline-dark cs-btn-game-size" id="box' + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')">-</button>';
+            div_in_html.childNodes[i + 1].innerHTML += '<button type="button" class="btn btn-outline-dark cs-btn-game-size" id="box'
+                + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')">-</button>';
         }
     }
 
-    valid_boxes = gsize * gsize - bombs;
+    VALID_BOXES = GRID_SIZE * GRID_SIZE - bombs;
 
     // Show board
     document.getElementById('board').style.display = 'block';
 }
 
-function init_board(grid_size, bombs, x, y) {
-    // Generating bombs
-    var b = bombs;
+// Bomb location generator
+function generate_bombs(grid_size, num_of_bombs, x, y) {
+    var b = num_of_bombs;
     while (b > 0) {
         var i = Math.floor(Math.random() * grid_size);
         var j = Math.floor(Math.random() * grid_size);
         // -1 on the grid = bomb!
-        if (grid[i][j] != -1 && !(i == x && j == y)) {
-            grid[i][j] = -1;
+        if (GRID[i][j] != -1 && !(i == x && j == y)) {
+            GRID[i][j] = -1;
             b--;
             // Calculate neighbors
             for (var k = i - 1; k <= i + 1; k++) {
                 for (var l = j - 1; l <= j + 1; l++) {
-                    if (k > -1 && l > -1 && k < grid_size && l < grid_size && grid[k][l] != -1) {
-                        grid[k][l]++;
+                    if (k > -1 && l > -1 && k < grid_size && l < grid_size && GRID[k][l] != -1) {
+                        GRID[k][l]++;
                     }
                 }
             }
@@ -96,6 +106,7 @@ function init_board(grid_size, bombs, x, y) {
     }
 }
 
+// Create a [N,M] matrix, filled with zeros
 function zeros(dimensions) {
     var array = [];
 
@@ -106,39 +117,40 @@ function zeros(dimensions) {
     return array;
 }
 
+// Called if box is clicked
 function box_clicked(x, y) {
-    if (game_over) {
+    if (GAME_OVER) {
         return;
     }
 
-    if (!game_started) {
-        init_board(gsize, bmbs, x, y);
-        game_started = true;
+    if (!GAME_STARTED) {
+        generate_bombs(GRID_SIZE, BOMBS, x, y);
+        GAME_STARTED = true;
     }
 
     var box_id = x + ',' + y;
-    if (grid[x][y] == 0) {
+    if (GRID[x][y] == 0) {
         var elem = '<button type="button" class="btn btn-success cs-btn-game-size">0</button>';
-        grid[x][y] = null; // for stopping the recursion
+        GRID[x][y] = null; // for stopping the recursion
         for (var i = x - 1; i <= x + 1; i++) {
             for (var j = y - 1; j <= y + 1; j++) {
-                if (i > -1 && i < gsize && j > -1 && j < gsize) {
+                if (i > -1 && i < GRID_SIZE && j > -1 && j < GRID_SIZE) {
                     box_clicked(i, j);
                 }
             }
         }
-        valid_boxes--;
-    } else if (grid[x][y] == -1) {
+        VALID_BOXES--;
+    } else if (GRID[x][y] == -1) {
         var elem = '<button type="button" class="btn btn-danger cs-btn-game-size"><i class="fas fa-bomb"></i></button>';
-        game_over = true;
+        GAME_OVER = true;
     } else {
-        if (grid[x][y] == null) {
+        if (GRID[x][y] == null) {
             return;
         }
 
-        var elem = '<button type="button" class="btn btn-success cs-btn-game-size">' + grid[x][y] + '</button>';
-        grid[x][y] = null; // for stopping the recursion
-        valid_boxes--;
+        var elem = '<button type="button" class="btn btn-success cs-btn-game-size">' + GRID[x][y] + '</button>';
+        GRID[x][y] = null; // for stopping the recursion
+        VALID_BOXES--;
     }
     try {
         document.getElementById('box' + x + ',' + y).outerHTML = elem;
@@ -146,18 +158,16 @@ function box_clicked(x, y) {
 
     }
 
-    console.log(valid_boxes);
-
     // Losing condition 
-    if (game_over) {
+    if (GAME_OVER) {
         var se = new Audio('static/audio/lose.mp3');
         se.play();
         alert("Game over!");
     }
 
     // Winning condition
-    if (valid_boxes == 0) {
-        game_over = true;
+    if (VALID_BOXES == 0) {
+        GAME_OVER = true;
         alert("You win!");
         document.getElementById('win').childNodes[1].play();
         document.getElementById('board').style.display = 'none';
@@ -165,8 +175,9 @@ function box_clicked(x, y) {
     }
 }
 
+// Called if box is right clicked
 function box_right_clicked(x, y) {
-    if (game_over) {
+    if (GAME_OVER || !GAME_STARTED) {
         return;
     }
 
