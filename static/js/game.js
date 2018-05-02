@@ -182,6 +182,10 @@ function box_right_clicked(x, y) {
         return;
     }
 
+    if(!GAME_STARTED) {
+        alert("You won't find a bomb on first turn, so you don't have to right click! ;)");
+    }
+
     var box_id = x + ',' + y;
     var elem = '<button type="button" class="btn btn-outline-danger cs-btn-game-size" id="boxrc' + box_id + '" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-flag"></i></button>';
     try {
