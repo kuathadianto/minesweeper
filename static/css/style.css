@@ -44,3 +44,16 @@ html, body, .cs-full-height {
 footer {
     padding-top: 0.75rem;
 }
+
+#timer {
+    padding-bottom: 0.5rem;
+    color: var(--red);
+}
+
+#remaining-blocks-div {
+    padding-top: 0.5rem;
+}
+
+#remaining-blocks {
+    color: var(--green);
+}

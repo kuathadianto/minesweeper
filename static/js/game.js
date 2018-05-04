@@ -3,20 +3,20 @@ var TITLE = "Minesweeper";
 var LEVELS = [
     {
         "name": "Easy",
-        "grid_size": 8,
-        "bombs": 10,
+        "grid_size": 6,
+        "bombs": 5,
         "btn-class": "btn btn-success btn-lg cs-btn-margin-right cs-btn-game-level"
     },
     {
         "name": "Medium",
-        "grid_size": 10,
-        "bombs": 20,
+        "grid_size": 8,
+        "bombs": 15,
         "btn-class": "btn btn-warning btn-lg cs-btn-margin-right cs-btn-game-level"
     },
     {
         "name": "Hard",
-        "grid_size": 12,
-        "bombs": 45,
+        "grid_size": 10,
+        "bombs": 30,
         "btn-class": "btn btn-danger btn-lg cs-btn-game-level"
     }
 ]
@@ -63,7 +63,7 @@ function game_start(grid_size, bombs) {
 
     // Initialize empty board
     for (var i = 0; i < grid_size; i++) {
-        var div_in_html = document.getElementById('board').childNodes[1].childNodes[1].childNodes[1];
+        var div_in_html = document.getElementById('board').childNodes[1].childNodes[1].childNodes[3];
 
         if (i < grid_size - 1) {
             div_in_html.innerHTML += '<div class="col-md-12 text-center cs-col-padding">';
@@ -79,9 +79,20 @@ function game_start(grid_size, bombs) {
     }
 
     VALID_BOXES = GRID_SIZE * GRID_SIZE - bombs;
+    document.getElementById('remaining-blocks').innerHTML = VALID_BOXES;
 
     // Show board
     document.getElementById('board').style.display = 'block';
+}
+
+// Game timer
+var TIMER = 0;
+function timer() {
+    document.getElementById('timer').innerHTML = TIMER;
+    TIMER++;
+    if(!GAME_OVER) {
+        setTimeout(timer, 1000);
+    }
 }
 
 // Bomb location generator
@@ -91,7 +102,8 @@ function generate_bombs(grid_size, num_of_bombs, x, y) {
         var i = Math.floor(Math.random() * grid_size);
         var j = Math.floor(Math.random() * grid_size);
         // -1 on the grid = bomb!
-        if (GRID[i][j] != -1 && !(i == x && j == y)) {
+        var first_block_is_zero = (Math.abs(x-i) > 1 || Math.abs(y-j) > 1);
+        if (GRID[i][j] != -1 && first_block_is_zero) {
             GRID[i][j] = -1;
             b--;
             // Calculate neighbors
@@ -127,6 +139,9 @@ function box_clicked(x, y) {
     if (!GAME_STARTED) {
         generate_bombs(GRID_SIZE, BOMBS, x, y);
         GAME_STARTED = true;
+
+        // Activate timer
+        timer();
     }
 
     var box_id = x + ',' + y;
@@ -159,6 +174,9 @@ function box_clicked(x, y) {
 
     }
 
+    // Update remaining boxes to be opened
+    document.getElementById('remaining-blocks').innerHTML = VALID_BOXES;
+
     // Losing condition 
     if (GAME_OVER) {
         var se = new Audio('static/audio/lose.mp3');
@@ -169,7 +187,7 @@ function box_clicked(x, y) {
     // Winning condition
     if (VALID_BOXES == 0) {
         GAME_OVER = true;
-        alert("You win!");
+        alert("You win in " + TIMER + " seconds!");
         document.getElementById('win').childNodes[1].play();
         document.getElementById('board').style.display = 'none';
         document.getElementById('win').style.display = 'block';
