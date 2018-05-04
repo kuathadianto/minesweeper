@@ -209,6 +209,13 @@ function box_right_clicked(x, y) {
     try {
         document.getElementById('box' + x + ',' + y).outerHTML = elem;
     } catch (TypeError) {
-        document.getElementById('boxrc' + x + ',' + y).outerHTML = '<button type="button" class="btn btn-outline-dark cs-btn-game-size" id="box' + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')">-</button>';
-    }
+        try {
+            // Change to flag
+            elem = '<button type="button" class="btn btn-outline-info cs-btn-game-size" id="boxrd' + box_id + '" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-question"></i></button>';
+            document.getElementById('boxrc' + x + ',' + y).outerHTML = elem;
+        } catch (TypeError) {
+            // Change to question mark
+            document.getElementById('boxrd' + x + ',' + y).outerHTML = '<button type="button" class="btn btn-outline-dark cs-btn-game-size" id="box' + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')">-</button>';
+        }
+    } 
 }
