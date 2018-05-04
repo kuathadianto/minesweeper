@@ -57,3 +57,8 @@ footer {
 #remaining-blocks {
     color: var(--green);
 }
+
+#notification {
+    display: none;
+    margin-top: 4.5rem;
+}

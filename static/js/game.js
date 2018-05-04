@@ -29,12 +29,13 @@ document.title = TITLE;
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 // Create global variables
-var GRID;                   // Game board, matrix
-var GRID_SIZE;              // Grid size, integer
-var BOMBS;                  // How many bombs in game
-var VALID_BOXES;            // Boxes without bomb
-var GAME_OVER = false;      // Game over flag
-var GAME_STARTED = false;   // Game is started, if a box has been clicked    
+var GRID;                               // Game board, matrix
+var GRID_SIZE;                          // Grid size, integer
+var BOMBS;                              // How many bombs in game
+var VALID_BOXES;                        // Boxes without bomb
+var GAME_OVER = false;                  // Game over flag
+var GAME_STARTED = false;               // Game is started, if a box has been clicked
+var NOTIFICATION_DISPLAY_TIME = 0;      // How long notification is displayed (in ms; 0 -> won't close automatically)    
 
 // Show available levels
 for (var i = 0; i < LEVELS.length; i++) {
@@ -90,7 +91,7 @@ var TIMER = 0;
 function timer() {
     document.getElementById('timer').innerHTML = TIMER;
     TIMER++;
-    if(!GAME_OVER) {
+    if (!GAME_OVER) {
         setTimeout(timer, 1000);
     }
 }
@@ -102,7 +103,7 @@ function generate_bombs(grid_size, num_of_bombs, x, y) {
         var i = Math.floor(Math.random() * grid_size);
         var j = Math.floor(Math.random() * grid_size);
         // -1 on the grid = bomb!
-        var first_block_is_zero = (Math.abs(x-i) > 1 || Math.abs(y-j) > 1);
+        var first_block_is_zero = (Math.abs(x - i) > 1 || Math.abs(y - j) > 1);
         if (GRID[i][j] != -1 && first_block_is_zero) {
             GRID[i][j] = -1;
             b--;
@@ -144,7 +145,6 @@ function box_clicked(x, y) {
         timer();
     }
 
-    var box_id = x + ',' + y;
     if (GRID[x][y] == 0) {
         var elem = '<button type="button" class="btn btn-success cs-btn-game-size">0</button>';
         GRID[x][y] = null; // for stopping the recursion
@@ -163,16 +163,12 @@ function box_clicked(x, y) {
         if (GRID[x][y] == null) {
             return;
         }
-
         var elem = '<button type="button" class="btn btn-success cs-btn-game-size">' + GRID[x][y] + '</button>';
         GRID[x][y] = null; // for stopping the recursion
         VALID_BOXES--;
     }
-    try {
-        document.getElementById('box' + x + ',' + y).outerHTML = elem;
-    } catch (TypeError) {
 
-    }
+    document.getElementById('box' + x + ',' + y).outerHTML = elem;
 
     // Update remaining boxes to be opened
     document.getElementById('remaining-blocks').innerHTML = VALID_BOXES;
@@ -181,41 +177,81 @@ function box_clicked(x, y) {
     if (GAME_OVER) {
         var se = new Audio('static/audio/lose.mp3');
         se.play();
-        alert("Game over!");
+        var msg = 'Game over! <b>TIP:</b> You can <b>right</b> click on boxes if you think that those are bombs.'
+        show_notification(msg, 'danger', NOTIFICATION_DISPLAY_TIME);
     }
 
     // Winning condition
     if (VALID_BOXES == 0) {
         GAME_OVER = true;
-        alert("You win in " + TIMER + " seconds!");
+        var msg = "YOU WIN in " + TIMER + " seconds!";
+        show_notification(msg, 'success', 10000);
         document.getElementById('win').childNodes[1].play();
         document.getElementById('board').style.display = 'none';
         document.getElementById('win').style.display = 'block';
+        document.getElementById('navbar').style.display = 'none';
+        document.getElementById('footer').style.display = 'none';
+        setTimeout(function(){
+            location.reload();
+        }, 23000);
     }
+}
+
+// If box is clicked, but it's already right clicked
+function box_clicked_on_mark() {
+    var msg = "You have to remove the marking before you can open this box (by right clicking it).";
+    show_notification(msg, 'info', NOTIFICATION_DISPLAY_TIME);
 }
 
 // Called if box is right clicked
 function box_right_clicked(x, y) {
-    if (GAME_OVER || !GAME_STARTED) {
+    if (GAME_OVER) {
         return;
     }
 
-    if(!GAME_STARTED) {
-        alert("You won't find a bomb on first turn, so you don't have to right click! ;)");
+    if (!GAME_STARTED) {
+        var msg = "You won't find a bomb on the first turn, so you don't have to right click it! ;)";
+        show_notification(msg, 'info', NOTIFICATION_DISPLAY_TIME);
+        return;
     }
 
     var box_id = x + ',' + y;
-    var elem = '<button type="button" class="btn btn-outline-danger cs-btn-game-size" id="boxrc' + box_id + '" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-flag"></i></button>';
+    var elem = '<button type="button" class="btn btn-outline-danger cs-btn-game-size" id="boxrc' + box_id + '" onclick="box_clicked_on_mark()" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-flag"></i></button>';
     try {
         document.getElementById('box' + x + ',' + y).outerHTML = elem;
     } catch (TypeError) {
         try {
             // Change to flag
-            elem = '<button type="button" class="btn btn-outline-info cs-btn-game-size" id="boxrd' + box_id + '" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-question"></i></button>';
+            elem = '<button type="button" class="btn btn-outline-info cs-btn-game-size" id="boxrd' + box_id + '" onclick="box_clicked_on_mark()" oncontextmenu="box_right_clicked(' + box_id + ')"><i class="fas fa-question"></i></button>';
             document.getElementById('boxrc' + x + ',' + y).outerHTML = elem;
         } catch (TypeError) {
             // Change to question mark
             document.getElementById('boxrd' + x + ',' + y).outerHTML = '<button type="button" class="btn btn-outline-dark cs-btn-game-size" id="box' + box_id + '" onclick="box_clicked(' + box_id + ')" oncontextmenu="box_right_clicked(' + box_id + ')">-</button>';
         }
-    } 
+    }
+}
+
+// Show notification
+function show_notification(message, type, auto_close_in_ms) {
+    var notification_type = document.getElementById('notification-type');
+    if (type == 'info') {
+        notification_type.className = "alert alert-info";
+    } else if (type == 'success') {
+        notification_type.className = "alert alert-success";
+    } else if (type == 'danger') {
+        notification_type.className = "alert alert-danger";
+    }
+
+    document.getElementById('notification-message').innerHTML = message;
+    document.getElementById('notification').style.display = 'block';
+    if (auto_close_in_ms > 0) {
+        close_notification(auto_close_in_ms);
+    }
+}
+
+// Close notification
+function close_notification(ms) {
+    setTimeout(function () {
+        document.getElementById('notification').style.display = 'none';
+    }, parseInt(ms));
 }
