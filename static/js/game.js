@@ -177,23 +177,19 @@ function box_clicked(x, y) {
     if (GAME_OVER) {
         var se = new Audio('static/audio/lose.mp3');
         se.play();
-        var msg = 'Game over! <b>TIP:</b> You can <b>right</b> click on boxes if you think that those are bombs.'
+        var msg = 'Game over! <b>TIP:</b> You can <b>right</b> click on boxes if you think that those are bombs. <a href="#" onclick="show_bombs()">Click here to reveal all bombs.</a>';
         show_notification(msg, 'danger', NOTIFICATION_DISPLAY_TIME);
     }
 
     // Winning condition
     if (VALID_BOXES == 0) {
+        alert('YOU WIN!');
         GAME_OVER = true;
         var msg = "YOU WIN in " + TIMER + " seconds!";
         show_notification(msg, 'success', 10000);
         document.getElementById('win').childNodes[1].play();
         document.getElementById('board').style.display = 'none';
         document.getElementById('win').style.display = 'block';
-        document.getElementById('navbar').style.display = 'none';
-        document.getElementById('footer').style.display = 'none';
-        setTimeout(function(){
-            location.reload();
-        }, 23000);
     }
 }
 
@@ -254,4 +250,34 @@ function close_notification(ms) {
     setTimeout(function () {
         document.getElementById('notification').style.display = 'none';
     }, parseInt(ms));
+}
+
+// Show all bombs
+function show_bombs() {
+    // This function can only be activated, if game is over
+    if (!GAME_OVER) {
+        return;
+    }
+
+    for (var i = 0; i < GRID_SIZE; i++) {
+        for (var j = 0; j < GRID_SIZE; j++) {
+            if(GRID[i][j] == -1) {
+                var bomb_box = '<button type="button" class="btn btn-danger cs-btn-game-size"><i class="fas fa-bomb"></i></button>';
+                try {
+                    document.getElementById('box' + i + ',' + j).outerHTML = bomb_box;
+                } catch(TypeError) {
+                    try {
+                        document.getElementById('boxrc' + i + ',' + j).outerHTML = bomb_box;
+                    } catch(TypeError) {
+                        try {
+                            document.getElementById('boxrd' + i + ',' + j).outerHTML = bomb_box;
+                        }
+                        catch(TypeError) {
+                            
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
